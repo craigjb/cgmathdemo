@@ -99,11 +99,8 @@ fn draw_models(canvas: &mut WindowCanvas, transform: Matrix4<f32>, models: &Vec<
 }
 
 fn render(canvas: &mut WindowCanvas, models: &Vec<Model>, time: f32) {
-    // let rotate_y = Matrix4::from_angle_y(Deg(time * 90.0));
-    // let rotate_x = Matrix4::from_angle_x(Deg(time * 45.0));
     let scale = Matrix4::from_scale(100.0);
     let rotate_z = Matrix4::from_angle_z(Deg(180.0));
-    let rotate_x = Matrix4::from_angle_z(Deg(45.0));
     let rotate_y = Matrix4::from_angle_y(Deg(90.0 * time));
     let translate_back = Matrix4::from_translation(Vector3::new(1024.0 / 2.0, 768.0 / 2.0, 0.0));
     let transform = translate_back * rotate_y * rotate_z * scale;
