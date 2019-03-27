@@ -1,4 +1,4 @@
-use cgmath::Point2;
+use cgmath::{Point2, Vector2};
 use {
     sdl2, sdl2::event::Event, sdl2::keyboard::Keycode, sdl2::pixels::PixelFormatEnum,
     sdl2::render::WindowCanvas, sdl2::video::DisplayMode,
@@ -52,5 +52,7 @@ fn draw_line(canvas: &mut WindowCanvas, p1: Point2<i32>, p2: Point2<i32>) {
 }
 
 fn render(canvas: &mut WindowCanvas) {
-    draw_line(canvas, Point2::new(0, 0), Point2::new(500, 500));
+    let p0 = Point2::new(0, 0);
+    let v1 = Vector2::new(400, 100);
+    draw_line(canvas, p0, p0 + v1);
 }
