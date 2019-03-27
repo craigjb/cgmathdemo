@@ -1,4 +1,6 @@
-use cgmath::{BaseNum, Deg, Matrix4, Point2, Point3, Rad, SquareMatrix, Transform, Vector2};
+use cgmath::{
+    BaseNum, Deg, Matrix4, Point2, Point3, Rad, SquareMatrix, Transform, Vector2, Vector3,
+};
 use std::time::{Duration, Instant};
 use {
     sdl2, sdl2::event::Event, sdl2::keyboard::Keycode, sdl2::pixels::PixelFormatEnum,
@@ -62,7 +64,12 @@ fn render(canvas: &mut WindowCanvas, time: f64) {
     let ll = Point3::new(100.0, 768.0 - 100.0, 0.0);
     let lr = Point3::new(1024.0 - 100.0, 768.0 - 100.0, 0.0);
 
-    let transform = Matrix4::from_angle_y(Deg(time * 90.0));
+    let translate_to_center =
+        Matrix4::from_translation(Vector3::new(-1024.0 / 2.0, -768.0 / 2.0, 0.0));
+    let rotate = Matrix4::from_angle_y(Deg(time * 90.0));
+    let translate_back = Matrix4::from_translation(Vector3::new(1024.0 / 2.0, 768.0 / 2.0, 0.0));
+
+    let transform = translate_back * rotate * translate_to_center;
     let ul = transform.transform_point(ul);
     let ur = transform.transform_point(ur);
     let ll = transform.transform_point(ll);
