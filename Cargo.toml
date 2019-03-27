@@ -1,0 +1,9 @@
+[package]
+name = "cgmathdemo"
+version = "0.1.0"
+authors = ["Craig Bishop <craig@craigjb.com>"]
+edition = "2018"
+
+[dependencies]
+sdl2 = "0.32.1"
+cgmath = "0.17.0"
