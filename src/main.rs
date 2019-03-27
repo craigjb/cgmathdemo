@@ -66,10 +66,11 @@ fn render(canvas: &mut WindowCanvas, time: f64) {
 
     let translate_to_center =
         Matrix4::from_translation(Vector3::new(-1024.0 / 2.0, -768.0 / 2.0, 0.0));
-    let rotate = Matrix4::from_angle_y(Deg(time * 90.0));
+    let rotate_y = Matrix4::from_angle_y(Deg(time * 90.0));
+    let rotate_x = Matrix4::from_angle_x(Deg(time * 45.0));
     let translate_back = Matrix4::from_translation(Vector3::new(1024.0 / 2.0, 768.0 / 2.0, 0.0));
 
-    let transform = translate_back * rotate * translate_to_center;
+    let transform = translate_back * rotate_y * rotate_x * translate_to_center;
     let ul = transform.transform_point(ul);
     let ur = transform.transform_point(ur);
     let ll = transform.transform_point(ll);
