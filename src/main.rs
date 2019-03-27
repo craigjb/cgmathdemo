@@ -11,6 +11,39 @@ use {
     sdl2::render::WindowCanvas, sdl2::video::DisplayMode,
 };
 
+trait PositionsAsPoint3 {
+    fn get_position(&self, index: u32) -> Option<Point3<f32>>;
+}
+
+impl PositionsAsPoint3 for Mesh {
+    fn get_position(&self, index: u32) -> Option<Point3<f32>> {
+        match (
+            self.positions.get(index as usize * 3),
+            self.positions.get(index as usize * 3 + 1),
+            self.positions.get(index as usize * 3 + 2),
+        ) {
+            (Some(&x), Some(&y), Some(&z)) => Some(Point3::new(x, y, z)),
+            _ => None,
+        }
+    }
+}
+
+fn lines_for_model(path: &Path) -> Result<Vec<(Point3<f32>, Point3<f32>)>, tobj::LoadError> {
+    let (models, _) = tobj::load_obj(path)?;
+    let mut lines = Vec::new();
+    for model in models.iter() {
+        for (i0, i1, i2) in model.mesh.indices.iter().tuples() {
+            let p0 = model.mesh.get_position(*i0).unwrap();
+            let p1 = model.mesh.get_position(*i1).unwrap();
+            let p2 = model.mesh.get_position(*i2).unwrap();
+            lines.push((p0, p1));
+            lines.push((p1, p2));
+            lines.push((p2, p0));
+        }
+    }
+    Ok(lines)
+}
+
 fn main() {
     let sdl_context = sdl2::init().expect("Failed to init SDL");
     let sdl_video = sdl_context.video().expect("Failed to init SDL video");
@@ -27,7 +60,7 @@ fn main() {
         .build()
         .expect("Failed to create canvas");
 
-    let (models, _) = tobj::load_obj(&Path::new("car.obj")).expect("Failed to load model file");
+    let model_lines = lines_for_model(&Path::new("car.obj")).expect("Failed to load model lines");
 
     let mut event_pump = sdl_context.event_pump().expect("Failed to get event pump");
     let start = Instant::now();
@@ -42,7 +75,7 @@ fn main() {
         // call our render function
         render(
             &mut canvas,
-            &models,
+            &model_lines,
             start.elapsed().as_nanos() as f32 / 1.0e9,
         );
 
@@ -62,47 +95,24 @@ fn main() {
     }
 }
 
-trait PositionsAsPoint3 {
-    fn get_position(&self, index: u32) -> Option<Point3<f32>>;
-}
-
-impl PositionsAsPoint3 for Mesh {
-    fn get_position(&self, index: u32) -> Option<Point3<f32>> {
-        match (
-            self.positions.get(index as usize * 3),
-            self.positions.get(index as usize * 3 + 1),
-            self.positions.get(index as usize * 3 + 2),
-        ) {
-            (Some(&x), Some(&y), Some(&z)) => Some(Point3::new(x, y, z)),
-            _ => None,
-        }
-    }
-}
-
 fn draw_line<T: BaseNum>(canvas: &mut WindowCanvas, p1: Point3<T>, p2: Point3<T>) {
     let p1i = p1.cast::<i32>().unwrap();
     let p2i = p2.cast::<i32>().unwrap();
     canvas.draw_line((p1i.x, p1i.y), (p2i.x, p2i.y)).unwrap();
 }
 
-fn draw_models(canvas: &mut WindowCanvas, transform: Matrix4<f32>, models: &Vec<Model>) {
-    for model in models.iter() {
-        for (i0, i1, i2) in model.mesh.indices.iter().tuples() {
-            let p0 = transform.transform_point(model.mesh.get_position(*i0).unwrap());
-            let p1 = transform.transform_point(model.mesh.get_position(*i1).unwrap());
-            let p2 = transform.transform_point(model.mesh.get_position(*i2).unwrap());
-            draw_line(canvas, p0, p1);
-            draw_line(canvas, p1, p2);
-            draw_line(canvas, p2, p0);
-        }
-    }
-}
-
-fn render(canvas: &mut WindowCanvas, models: &Vec<Model>, time: f32) {
+fn render(canvas: &mut WindowCanvas, model_lines: &Vec<(Point3<f32>, Point3<f32>)>, time: f32) {
     let scale = Matrix4::from_scale(100.0);
     let rotate_z = Matrix4::from_angle_z(Deg(180.0));
     let rotate_y = Matrix4::from_angle_y(Deg(90.0 * time));
     let translate_back = Matrix4::from_translation(Vector3::new(1024.0 / 2.0, 768.0 / 2.0, 0.0));
     let transform = translate_back * rotate_y * rotate_z * scale;
-    draw_models(canvas, transform, models);
+
+    for line in model_lines.iter() {
+        draw_line(
+            canvas,
+            transform.transform_point(line.0),
+            transform.transform_point(line.1),
+        );
+    }
 }
