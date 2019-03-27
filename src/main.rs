@@ -1,4 +1,4 @@
-use cgmath::{Point2, Vector2};
+use cgmath::{BaseNum, Point2, Point3, Vector2};
 use {
     sdl2, sdl2::event::Event, sdl2::keyboard::Keycode, sdl2::pixels::PixelFormatEnum,
     sdl2::render::WindowCanvas, sdl2::video::DisplayMode,
@@ -47,15 +47,17 @@ fn main() {
     }
 }
 
-fn draw_line(canvas: &mut WindowCanvas, p1: Point2<i32>, p2: Point2<i32>) {
-    canvas.draw_line((p1.x, p1.y), (p2.x, p2.y)).unwrap();
+fn draw_line<T: BaseNum>(canvas: &mut WindowCanvas, p1: Point3<T>, p2: Point3<T>) {
+    let p1i = p1.cast::<i32>().unwrap();
+    let p2i = p2.cast::<i32>().unwrap();
+    canvas.draw_line((p1i.x, p1i.y), (p2i.x, p2i.y)).unwrap();
 }
 
 fn render(canvas: &mut WindowCanvas) {
-    let ul = Point2::new(100, 100);
-    let ur = Point2::new(1024 - 100, 100);
-    let ll = Point2::new(100, 768 - 100);
-    let lr = Point2::new(1024 - 100, 768 - 100);
+    let ul = Point3::new(100.0, 100.0, 0.0);
+    let ur = Point3::new(1024.0 - 100.0, 100.0, 0.0);
+    let ll = Point3::new(100.0, 768.0 - 100.0, 0.0);
+    let lr = Point3::new(1024.0 - 100.0, 768.0 - 100.0, 0.0);
     draw_line(canvas, ul, ur);
     draw_line(canvas, ur, lr);
     draw_line(canvas, lr, ll);
